@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dclic_project_noteapp/pages/notes_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -86,7 +87,12 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             ElevatedButton(
-              onPressed: (){},
+              onPressed: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => NotesPage())
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.yellow,
                 fixedSize: Size(320, 40),
