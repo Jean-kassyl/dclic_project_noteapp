@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/dclic_project_noteapp.iml" filepath="$PROJECT_DIR$/dclic_project_noteapp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/dclic_project_noteapp_android.iml" filepath="$PROJECT_DIR$/android/dclic_project_noteapp_android.iml" />
+    </modules>
+  </component>
+</project>
