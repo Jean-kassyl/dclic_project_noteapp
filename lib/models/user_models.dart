@@ -24,6 +24,10 @@ class User {
       password: map['password']
     );
   }
+
+  bool checkPassword(String pw) {
+    return password == pw;
+  }
 }
 
 

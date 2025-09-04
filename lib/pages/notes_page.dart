@@ -5,6 +5,7 @@ import 'package:dclic_project_noteapp/main.dart';
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
+  
 
   @override
   State<NotesPage> createState() => _NotesPageState();
