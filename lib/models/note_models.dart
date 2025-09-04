@@ -40,12 +40,12 @@ class NoteDatabaseManager {
 
   Future<Database> initDb() async{
     return openDatabase(
-      join(await getDatabasesPath(), 'notes_database.db'),
+      join(await getDatabasesPath(), 'testnotes_database.db'),
       version: 1,
       onCreate: (db, version) {
         return db.execute(
           """ 
-            CREATE TABLE notes (
+            CREATE TABLE testnotes (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               titre TEXT,
               note Text
@@ -59,22 +59,24 @@ class NoteDatabaseManager {
 
   Future<List<Note>> getAllNotes() async{
     Database dbase = await db;
-    List<Map<String, dynamic>> maps = await dbase.query('notes');
+    List<Map<String, dynamic>> maps = await dbase.query('testnotes');
     return List.generate(maps.length, (i) => Note.fromMap(maps[i]));
   }
 
   Future<void> insertNote(Note note) async{
     Database dbase = await db;
-    await dbase.insert('notes', note.toMap());
+    await dbase.insert('testnotes', note.toMap());
   }
 
   Future<void> updateNote(Note note) async {
     Database dbase = await db;
-    await dbase.update('notes',note.toMap(), where: 'id = ?', whereArgs: [note.id] );
+    await dbase.update('testnotes',note.toMap(), where: 'id = ?', whereArgs: [note.id] );
   }
 
   Future<void> deleteNote(int? id) async{
     Database dbase = await db;
-    dbase.delete('notes', where: 'id = ?', whereArgs: [id]);
+    dbase.delete('testnotes', where: 'id = ?', whereArgs: [id]);
   }
+
+
 }

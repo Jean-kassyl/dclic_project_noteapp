@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dclic_project_noteapp/models/note_models.dart';
+import 'package:dclic_project_noteapp/pages/notes_page.dart';
 
 class CreateNotePage extends StatefulWidget {
   const CreateNotePage({super.key});
@@ -9,7 +11,7 @@ class CreateNotePage extends StatefulWidget {
 
 class _CreateNotePageState extends State<CreateNotePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
+  
 
 
   @override
@@ -48,7 +50,27 @@ class CreateDynamicPart extends StatefulWidget {
 class _CreateDynamicPartState extends State<CreateDynamicPart> {
   final TextEditingController _titreController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
+  NoteDatabaseManager myNoteDb = NoteDatabaseManager();
 
+
+  Future<void> _insertNote(Note note) async{
+    await myNoteDb.insertNote(note);
+  }
+
+  void _showDialog( String content){
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text(content),
+        actions: [
+          TextButton(onPressed:(){ Navigator.of(context).pop();},child: Text("Retour"),)
+        ]
+
+      )
+    );
+  }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +97,7 @@ class _CreateDynamicPartState extends State<CreateDynamicPart> {
 
         TextField(
           controller: _noteController,
-          maxLines: null,
+          maxLines: 2,
           decoration: InputDecoration(
             labelText: 'Note',
             border: OutlineInputBorder(),
@@ -84,7 +106,18 @@ class _CreateDynamicPartState extends State<CreateDynamicPart> {
         ),
 
         ElevatedButton(
-          onPressed: (){},
+          onPressed: (){
+            if(_titreController.text != '' || (_noteController.text != '')){
+              Note newNote = Note.sansId(titre: _titreController.text, note: _noteController.text);
+              _insertNote(newNote);
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) => NotesPage()
+              ));
+
+            }else {
+              _showDialog("Remplissez le formulaire pour créer une note");
+            }
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.yellow,
             elevation: 0,

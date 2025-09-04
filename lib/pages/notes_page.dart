@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dclic_project_noteapp/pages/create_notes_page.dart';
 import 'package:dclic_project_noteapp/main.dart';
 import 'package:dclic_project_noteapp/models/user_models.dart';
+import 'package:dclic_project_noteapp/models/note_models.dart';
 
 
 class NotesPage extends StatefulWidget {
@@ -15,6 +16,7 @@ class NotesPage extends StatefulWidget {
 class _NotesPageState extends State<NotesPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   UserDatabaseManager myUserDb = UserDatabaseManager();
+
   List<User>  users = [];
 
   Future<void> _loadUsers() async{
@@ -26,6 +28,7 @@ class _NotesPageState extends State<NotesPage> {
     await myUserDb.deleteUser(id);
     _loadUsers();
   }
+
 
   @override
   void initState(){
@@ -146,8 +149,51 @@ class NotesDynamicPart extends StatefulWidget {
 
 class _NotesDynamicPartState extends State<NotesDynamicPart> {
   final _searchController = TextEditingController();
-  final List<String> notes = ["hello"];
+  final _newTitreController = TextEditingController();
+  final _newNoteController = TextEditingController();
+  NoteDatabaseManager myNoteDb = NoteDatabaseManager();
+  
+  List<Note> notes = [];
+
+  void _showDialog( String content){
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text(content),
+        actions: [
+          TextButton(onPressed:(){ Navigator.of(context).pop();},child: Text("Retour"),)
+        ]
+
+      )
+    );
+  }
+  
+
+
+  Future<void> _loadNotes() async{
+    List<Note> allNotes = await myNoteDb.getAllNotes();
+    setState(() => notes = allNotes);
+  }
+
+
  
+
+  Future<void> _updateNote(Note note) async{
+    await myNoteDb.updateNote(note);
+    _loadNotes();
+  }
+
+  Future<void> _deleteNote(int? id) async{
+    await myNoteDb.deleteNote(id);
+    _loadNotes();
+  }
+
+ 
+  @override
+  void initState(){
+    super.initState();
+    _loadNotes();
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -170,7 +216,9 @@ class _NotesDynamicPartState extends State<NotesDynamicPart> {
               ),
             ),
             ElevatedButton(
-              onPressed: (){},
+              onPressed: (){
+                
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.yellow[200],
                 padding: EdgeInsets.symmetric(vertical: 18, horizontal: 15),
@@ -188,15 +236,14 @@ class _NotesDynamicPartState extends State<NotesDynamicPart> {
         Column(
           
           children: <Widget>[
-            notes.isEmpty? Container(
+            notes.isEmpty?Container(
               alignment: Alignment.center, 
-             
               constraints: BoxConstraints(
                 minHeight: 500,
                 maxHeight: double.infinity
               ),
               child: Text('happening'),
-            ): ListView.builder(itemCount: notes.length, shrinkWrap: true, itemBuilder: (context, i){
+            ):ListView.builder(itemCount: notes.length, shrinkWrap: true, itemBuilder: (context, i){
               return Container(
                 margin: EdgeInsets.symmetric(vertical: 5),
                 padding: EdgeInsets.all(12),
@@ -210,7 +257,7 @@ class _NotesDynamicPartState extends State<NotesDynamicPart> {
                       spacing: 5,
                       children: [
                         Text(
-                          'titre',
+                          notes[i].titre,
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.yellow[100],
@@ -219,7 +266,7 @@ class _NotesDynamicPartState extends State<NotesDynamicPart> {
                           
                         ),
                          Text(
-                          'Some text to see the result',
+                          notes[i].note,
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.yellow[100],
@@ -231,11 +278,55 @@ class _NotesDynamicPartState extends State<NotesDynamicPart> {
                     Row(
                       children: [
                         IconButton(
-                          onPressed: (){},
+                          onPressed: (){
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text("Modifier votre note"),
+                                content: Column(
+                                  children: [
+                                    TextField(
+                                      controller: _newTitreController,
+                                      maxLines: 2,
+                                      decoration: InputDecoration(
+                                        labelText: "titre",
+                                        border: UnderlineInputBorder()
+                                      ),
+                                    ), 
+                                     TextField(
+                                      controller: _newNoteController,
+                                      maxLines: 2,
+                                      decoration: InputDecoration(
+                                        labelText: "Note",
+                                        border: UnderlineInputBorder()
+                                      ),
+                                    ), 
+                                  ]
+                                ) ,
+                                actions: [
+                                  TextButton(onPressed: (){ Navigator.of(context).pop();}, child: Text(
+                                    "Annuler",
+                                    style: TextStyle(color: Colors.red)
+                                  )),
+                                  OutlinedButton(onPressed: (){
+                                    if(_newTitreController.text != '' || (_newNoteController.text != '')){
+                                      Note updatedNote = Note(id: notes[i].id, titre: _newTitreController.text, note: _newNoteController.text );
+                                      _updateNote(updatedNote);
+                                    }else {
+                                      _showDialog("remplissez le formulaire pour modifier votre note");
+                                    }
+                                  }, child: Text("Modifier"))
+                                ],
+
+                              )
+                            );
+                          },
                           icon: Icon(Icons.edit, color: Colors.yellow[400])
                         ),
                         IconButton(
-                          onPressed: (){},
+                          onPressed: (){
+                            _deleteNote(notes[i].id);
+                          },
                           icon: Icon(Icons.delete, color: Colors.red[400])
                         ),
                       ],
@@ -244,10 +335,13 @@ class _NotesDynamicPartState extends State<NotesDynamicPart> {
                 ),
               );
             }),
-          ],
-        ),
        ]
+     ),
+      ]
+      
     )
+  
     );
+      
   }
 }

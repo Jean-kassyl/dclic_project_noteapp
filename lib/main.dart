@@ -61,7 +61,8 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _showDialog(String content){
+  
+void _showDialog( String content){
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
