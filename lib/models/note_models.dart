@@ -56,4 +56,25 @@ class NoteDatabaseManager {
       }
     );
   }
+
+  Future<List<Note>> getAllNotes() async{
+    Database dbase = await db;
+    List<Map<String, dynamic>> maps = await dbase.query('notes');
+    return List.generate(maps.length, (i) => Note.fromMap(maps[i]));
+  }
+
+  Future<void> insertNote(Note note) async{
+    Database dbase = await db;
+    await dbase.insert('notes', note.toMap());
+  }
+
+  Future<void> updateNote(Note note) async {
+    Database dbase = await db;
+    await dbase.update('notes',note.toMap(), where: 'id = ?', whereArgs: [note.id] );
+  }
+
+  Future<void> deleteNote(int? id) async{
+    Database dbase = await db;
+    dbase.delete('notes', where: 'id = ?', whereArgs: [id]);
+  }
 }

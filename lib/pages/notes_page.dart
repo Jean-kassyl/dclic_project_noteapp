@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dclic_project_noteapp/pages/create_notes_page.dart';
 import 'package:dclic_project_noteapp/main.dart';
+import 'package:dclic_project_noteapp/models/user_models.dart';
 
 
 class NotesPage extends StatefulWidget {
@@ -13,8 +14,24 @@ class NotesPage extends StatefulWidget {
 
 class _NotesPageState extends State<NotesPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  UserDatabaseManager myUserDb = UserDatabaseManager();
+  List<User>  users = [];
 
+  Future<void> _loadUsers() async{
+    List<User> allUsers = await myUserDb.getAllUsers();
+    setState(() => users = allUsers);
+  }
 
+  Future<void> _deleteUser(int? id) async{
+    await myUserDb.deleteUser(id);
+    _loadUsers();
+  }
+
+  @override
+  void initState(){
+    super.initState();
+    _loadUsers();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,19 +56,33 @@ class _NotesPageState extends State<NotesPage> {
               ),
             ),
 
-            
-              
-            
-            ListTile(
-              title: Text("Olga smith", style: TextStyle(
+            // list view builder
+            SizedBox(
+              height: 400,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: users.length,
+                itemBuilder: (context, i){
+                  return ListTile(
+              title: Text(
+                users[i].username,
+                style: TextStyle(
                 fontSize: 14, color: Colors.yellow[100]
               ),),
               trailing: IconButton(
-                onPressed: (){},
+                onPressed: (){
+                  _deleteUser(users[i].id);
+                },
                 icon: Icon(Icons.delete, color: Colors.red[400], size: 35)
               ),
               
+            );
+                }
+              ),
             ),
+              
+            
+        
 
             ListTile(
               title: Text(
