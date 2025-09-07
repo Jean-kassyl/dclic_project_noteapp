@@ -148,13 +148,12 @@ void  initState(){
                  User? registeredUser = _findUserByName(_usernameController.text);
                  if(registeredUser != null){
                   if(registeredUser.checkPassword(_passwordController.text)){
-                    _showDialog("Bon retour sur MyNotes! ");
+                    
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => NotesPage(),
-                        settings: RouteSettings(arguments: registeredUser) 
-                      )
+                        builder: (context) => NotesPage(username: registeredUser.username)
+                      ),
                     );
                   }else{
                     _showDialog("Votre mot de passe ou nom d'utilisateur n'est pas correcte");
@@ -165,12 +164,11 @@ void  initState(){
                   } else {
                     User newUser = User(username: _usernameController.text, password: _passwordController.text);
                     _insertUser(newUser);
-                    _showDialog("Votre nouveau compte a bien été créé");
+                   
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => NotesPage(),
-                        settings: RouteSettings(arguments: newUser)
+                        builder: (context) => NotesPage(username: newUser.username),
                       )
                     );
                   }

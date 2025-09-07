@@ -6,7 +6,9 @@ import 'package:dclic_project_noteapp/models/note_models.dart';
 
 
 class NotesPage extends StatefulWidget {
-  const NotesPage({super.key});
+  final String username;
+
+  const NotesPage({Key? key, required this.username}):super(key: key);
   
 
   @override
@@ -16,6 +18,7 @@ class NotesPage extends StatefulWidget {
 class _NotesPageState extends State<NotesPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   UserDatabaseManager myUserDb = UserDatabaseManager();
+
 
   List<User>  users = [];
 
@@ -72,9 +75,14 @@ class _NotesPageState extends State<NotesPage> {
                 style: TextStyle(
                 fontSize: 14, color: Colors.yellow[100]
               ),),
+              selected: users[i].username == widget.username,
+              selectedTileColor: Colors.grey[700], 
               trailing: IconButton(
                 onPressed: (){
                   _deleteUser(users[i].id);
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => LoginPage()
+                  ));
                 },
                 icon: Icon(Icons.delete, color: Colors.red[400], size: 35)
               ),
@@ -125,7 +133,10 @@ class _NotesPageState extends State<NotesPage> {
         actions: [
           IconButton(
             onPressed: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context) => CreateNotePage()));
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) => CreateNotePage(username: widget.username)
+              ));
+              
             }, 
             icon: Icon(Icons.add_circle_rounded, size: 30),
           ),
@@ -134,14 +145,15 @@ class _NotesPageState extends State<NotesPage> {
 
       body: Container(
         padding: EdgeInsets.all(20),
-        child: NotesDynamicPart(),
+        child: NotesDynamicPart(username: widget.username),
         ),
     );
   }
 }
 
 class NotesDynamicPart extends StatefulWidget {
-  const NotesDynamicPart({super.key});
+  final String username;
+  const NotesDynamicPart({Key? key, required this.username}): super(key:key);
 
   @override
   State<NotesDynamicPart> createState() => _NotesDynamicPartState();
@@ -152,8 +164,24 @@ class _NotesDynamicPartState extends State<NotesDynamicPart> {
   final _newTitreController = TextEditingController();
   final _newNoteController = TextEditingController();
   NoteDatabaseManager myNoteDb = NoteDatabaseManager();
+  UserDatabaseManager myUserDb = UserDatabaseManager();
+  int? usrId = 0;
+  
+  
   
   List<Note> notes = [];
+
+  Future<void> _onSearch(searchTerm) async{
+    final registeredNotes = await myNoteDb.getAllNotes(usrId);
+    if(_searchController.text != ''){
+      final searchedNotes = registeredNotes.where((note) => note.note.contains(searchTerm) ).toList();
+      setState(() => notes = searchedNotes);
+    } else {
+      setState(() {
+        notes = registeredNotes;
+      });
+    }
+  }
 
   void _showDialog( String content){
     showDialog(
@@ -171,11 +199,18 @@ class _NotesDynamicPartState extends State<NotesDynamicPart> {
 
 
   Future<void> _loadNotes() async{
-    List<Note> allNotes = await myNoteDb.getAllNotes();
+    await _getId(widget.username);
+    
+    
+    print("from load notes user id $usrId");
+    List<Note> allNotes = await myNoteDb.getAllNotes(usrId);
     setState(() => notes = allNotes);
   }
 
-
+  Future<void> _getId(String username) async{
+    final int? id = await myUserDb.getIdByName(username);
+    setState(() => usrId = id);
+  }
  
 
   Future<void> _updateNote(Note note) async{
@@ -193,6 +228,7 @@ class _NotesDynamicPartState extends State<NotesDynamicPart> {
   void initState(){
     super.initState();
     _loadNotes();
+  
   }
   
   @override
@@ -213,11 +249,14 @@ class _NotesDynamicPartState extends State<NotesDynamicPart> {
                   ),
                   labelText: "Search...",
                 ),
+                onChanged: (text){
+                  _onSearch(text);
+                },
               ),
             ),
             ElevatedButton(
               onPressed: (){
-                
+                _onSearch(_searchController.text);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.yellow[200],
@@ -239,10 +278,10 @@ class _NotesDynamicPartState extends State<NotesDynamicPart> {
             notes.isEmpty?Container(
               alignment: Alignment.center, 
               constraints: BoxConstraints(
-                minHeight: 500,
+                minHeight: 400,
                 maxHeight: double.infinity
               ),
-              child: Text('happening'),
+              child: Text("Aucune note à afficher. Créer en une!"),
             ):ListView.builder(itemCount: notes.length, shrinkWrap: true, itemBuilder: (context, i){
               return Container(
                 margin: EdgeInsets.symmetric(vertical: 5),
@@ -252,28 +291,33 @@ class _NotesDynamicPartState extends State<NotesDynamicPart> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 5,
-                      children: [
-                        Text(
-                          notes[i].titre,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.yellow[100],
-                            fontWeight: FontWeight.bold,
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        
+                        spacing: 5,
+                        children: [
+                          Text(
+                            notes[i].titre,
+                            softWrap: true,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.yellow[100],
+                              fontWeight: FontWeight.bold,
+                            ),
+                            
                           ),
-                          
-                        ),
-                         Text(
-                          notes[i].note,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.yellow[100],
-                          ),
-                          
-                        ),
-                      ],
+                           Text(
+                            notes[i].note,
+                            softWrap: true,
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.yellow[100],
+                            ),
+                            
+                                                   ),
+                        ],
+                      ),
                     ),
                     Row(
                       children: [
@@ -310,8 +354,9 @@ class _NotesDynamicPartState extends State<NotesDynamicPart> {
                                   )),
                                   OutlinedButton(onPressed: (){
                                     if(_newTitreController.text != '' || (_newNoteController.text != '')){
-                                      Note updatedNote = Note(id: notes[i].id, titre: _newTitreController.text, note: _newNoteController.text );
+                                      Note updatedNote = Note(id: notes[i].id, titre: _newTitreController.text, note: _newNoteController.text, userId: usrId );
                                       _updateNote(updatedNote);
+                                      Navigator.of(context).pop();
                                     }else {
                                       _showDialog("remplissez le formulaire pour modifier votre note");
                                     }

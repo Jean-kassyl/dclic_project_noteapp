@@ -52,7 +52,7 @@ class UserDatabaseManager {
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               username TEXT,
               password TEXT
-            )
+            );
           """
         );
       } 
@@ -85,6 +85,18 @@ class UserDatabaseManager {
       (i) => User.fromMap(maps[i])
     );
    
+  }
+
+  Future<int?> getIdByName(String username) async{
+    Database db = await database;
+    List<Map<String, dynamic>> maps = await db.rawQuery(
+      ''' 
+        SELECT * FROM users WHERE username = '$username' LIMIT 1;
+      '''
+    );
+    List<User> users = List.generate(maps.length, (i) => User.fromMap(maps[i]));
+    if(users != []) return users[0].id;
+    return null;
   }
 
 }

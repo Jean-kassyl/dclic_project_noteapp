@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:dclic_project_noteapp/models/note_models.dart';
 import 'package:dclic_project_noteapp/pages/notes_page.dart';
+import 'package:dclic_project_noteapp/models/user_models.dart';
+
 
 class CreateNotePage extends StatefulWidget {
-  const CreateNotePage({super.key});
+  final String username;
+  const CreateNotePage({Key? key, required this.username}): super(key: key);
 
   @override
   State<CreateNotePage> createState() => _CreateNotePageState();
@@ -33,7 +36,7 @@ class _CreateNotePageState extends State<CreateNotePage> {
       ),
       body: Container(
         padding: EdgeInsets.all(30),
-        child: CreateDynamicPart(),
+        child: CreateDynamicPart(username: widget.username),
       ),
     );
   }
@@ -41,7 +44,8 @@ class _CreateNotePageState extends State<CreateNotePage> {
 
 
 class CreateDynamicPart extends StatefulWidget {
-  const CreateDynamicPart({super.key});
+  final String username;
+  const CreateDynamicPart({Key? key, required this.username}): super(key: key);
 
   @override
   State<CreateDynamicPart> createState() => _CreateDynamicPartState();
@@ -51,7 +55,20 @@ class _CreateDynamicPartState extends State<CreateDynamicPart> {
   final TextEditingController _titreController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   NoteDatabaseManager myNoteDb = NoteDatabaseManager();
+  UserDatabaseManager myUserDb = UserDatabaseManager();
 
+  int? userId = 0;
+
+  Future<void> _getId() async{
+    final int? usrId = await myUserDb.getIdByName(widget.username);
+    setState(() => userId = usrId);
+  }
+
+
+  Future<void> _setUserId() async {
+    await _getId();
+  }
+ 
 
   Future<void> _insertNote(Note note) async{
     await myNoteDb.insertNote(note);
@@ -70,7 +87,11 @@ class _CreateDynamicPartState extends State<CreateDynamicPart> {
     );
   }
 
-  
+  @override
+ void initState(){
+  super.initState();
+  _setUserId();
+ }
 
   @override
   Widget build(BuildContext context) {
@@ -108,11 +129,12 @@ class _CreateDynamicPartState extends State<CreateDynamicPart> {
         ElevatedButton(
           onPressed: (){
             if(_titreController.text != '' || (_noteController.text != '')){
-              Note newNote = Note.sansId(titre: _titreController.text, note: _noteController.text);
+              Note newNote = Note(titre: _titreController.text, note: _noteController.text, userId: userId);
               _insertNote(newNote);
               Navigator.push(context, MaterialPageRoute(
-                builder: (context) => NotesPage()
+                builder: (context) => NotesPage(username: widget.username)
               ));
+              
 
             }else {
               _showDialog("Remplissez le formulaire pour créer une note");
