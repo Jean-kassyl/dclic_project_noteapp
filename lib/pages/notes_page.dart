@@ -64,7 +64,7 @@ class _NotesPageState extends State<NotesPage> {
 
             // list view builder
             SizedBox(
-              height: 400,
+              height: 350,
               child: ListView.builder(
                 shrinkWrap: true,
                 itemCount: users.length,
@@ -108,6 +108,11 @@ class _NotesPageState extends State<NotesPage> {
             }, 
             icon: Icon(Icons.add_circle_rounded, color: Colors.yellow[400], size: 35),
           ),
+            ),
+            SizedBox(height: 35),
+            ListTile(
+              title: Text('Maximum 5 comptes', style: TextStyle(color: Colors.yellow[200])),
+              leading: Icon(Icons.info, color: Colors.red[600], size: 30)
             ),
 
            
